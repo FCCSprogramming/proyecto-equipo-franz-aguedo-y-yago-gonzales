@@ -15,6 +15,27 @@ void liberarMemoria(EstrucNotas* notas, int cantidadNotas) {
     delete[] notas; 
 }
 
+struct ListaDimEstudiantes{
+    char** nombresEstudiantes;
+    int cantidadEstudiantes;
+    char** cursos;
+    int cantidadCursos;
+}; 
+
+void liberarMemoriaEstudiantes(ListaDimEstudiantes* lista) {
+    for (int i = 0; i < lista->cantidadEstudiantes; ++i) {
+        delete[] lista->nombresEstudiantes[i];
+    }
+    delete[] lista->nombresEstudiantes;
+
+    for (int j = 0; j < lista->cantidadCursos; ++j) {
+        delete[] lista->cursos[j];
+    }
+    delete[] lista->cursos;
+
+    delete lista;
+}
+
 
 int main() {
 
