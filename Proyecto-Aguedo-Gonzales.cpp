@@ -50,13 +50,13 @@ class Persona{
       this->nombre=otro.nombre;
       this->edad=otro.edad;
   }
-  strign getNombre(){
+  string getNombre() const{
       return nombre;
   }
   void setNombre(string n){
       nombre=n;
   }
-  int getEdad(){
+  int getEdad() const{
       return edad;
   }
   void setEdad(int n){
@@ -67,9 +67,10 @@ class Persona{
       this->edad=edad;
   }
   virtual void mostrarinformacion()const=0;
-  virtual float calculardesempenio()const{
+  virtual void calculardesempenio()const{
       cout<<"Desempeño general de la persona.\n"  <<endl;
   }
+  virtual ~Persona(){}
 };
 
 class Estudiante:public Persona{
@@ -77,7 +78,7 @@ class Estudiante:public Persona{
     double promedio;
     public:
     Estudiante():Persona(),promedio(0.0){}
-    Estudiante(string n, int e,double p):Persona(n,e),promedio(promedio){}
+    Estudiante(string n, int e,double p):Persona(n,e),promedio(p){}
     Estudiante(const Estudiante& otro):Persona(otro){
         this->promedio=otro.promedio;
     }
@@ -92,7 +93,7 @@ class Estudiante:public Persona{
     
     void mostrarinformacion()const override{
         cout<<"Nombre: "<<getNombre()<<endl;
-        cout<<"Edad: "<<getEdad()<<endl;
+        cout<<"Edad: "<< getEdad() <<endl;
         cout<<"Promedio: "<<promedio<<endl;
     }
     
@@ -135,12 +136,12 @@ class Curso{
         creditos=b;
     }
     void mostrarinformacion(){
-        cout<<"Nombre del curso: "<<getNombre<<endl;
-        cout<<"Creditos: "<<getCreditos<<endl;
+        cout<<"Nombre del curso: "<< getNombre() <<endl;
+        cout<<"Creditos: "<< getCreditos() <<endl;
     }
 };
 
-class Sistema
+class Sistema{};
 int main() {
 
     return 0;
