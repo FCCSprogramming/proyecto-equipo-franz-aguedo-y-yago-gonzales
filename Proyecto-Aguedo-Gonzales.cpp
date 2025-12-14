@@ -4,6 +4,7 @@ using namespace std;
 
 struct EstrucNotas{
     float* nota;
+    int cantidadNotas;
     string curso;
     string estudiante;
 };
@@ -35,6 +36,12 @@ void liberarMemoriaEstudiantes(ListaDimEstudiantes* lista) {
 
     delete lista;
 }
+
+struct Inscripcion{
+    int indEstudiante;
+    int indCurso;
+};
+
 
 class Persona{
   private: 
@@ -141,7 +148,96 @@ class Curso{
     }
 };
 
-class Sistema{};
+class Sistema{
+    private:
+    Estudiante* estudiantes;
+    int cantidadEstudiantes;
+    Curso* cursos;
+    int cantidadCursos;
+    Inscripcion* inscripciones;
+    int cantdiadInscripciones;
+    public:
+    Sistema():estudiantes(nullptr),cantidadEstudiantes(0),cursos(nullptr),cantidadCursos(0),inscripciones(nullptr),cantdiadInscripciones(0){}
+
+    ~Sistema(){
+        delete[] estudiantes;
+        delete[] cursos;
+        delete[] inscripciones;
+    }
+
+    void registrarEstudiantes(){
+        string nombre;
+        int edad;
+        double promedio;
+
+        cout << "Nombre del estudiante: ";
+        cin.ignore();
+        getline(cin,nombre);
+        cout << "Edad: ";
+        cin >> edad;
+        cout << "Promedio: ";
+        cin >> promedio;
+        Estudiante* nuevo = new Estudiante[cantidadEstudiantes + 1];
+        for(int i = 0;i <cantidadEstudiantes;i++){
+            nuevo[i] = estudiantes[i];
+        }
+        nuevo[cantidadEstudiantes]= Estudiante(nombre, edad , promedio);
+
+        delete[] estudiantes;
+        estudiantes = nuevo;
+        cantidadEstudiantes++;
+
+        cout<<"Estudiante Registrado"<<endl;
+    }
+
+    void listarEstudiantes() const{
+        if(cantidadEstudiantes == 0){
+            cout<<"No hay ningun estudiante registrado"<<endl;
+            return;
+        }
+        for(int i=0;i<cantidadEstudiantes;i++){
+            estudiantes[i].mostrarinformacion();
+            estudiantes[i].calculardesempenio();
+            cout<<"-----------------------------------------"<<endl;
+        }
+    }
+
+    void registrarCursos(){
+        string nombre;
+        int creditos;
+        cout<<"Nombre del curso: ";
+        cin.ignore();
+        getline(cin,nombre);
+        cout<<"Creditos: ";
+        cin>>creditos;
+
+        Curso* nuevo = new Curso[cantidadCursos + 1];
+        for(int i =0 ; i< cantidadCursos;i++){
+            nuevo[i] = cursos[i];
+        }
+
+        nuevo[cantidadCursos] = Curso(nombre,creditos);
+
+        delete[] cursos;
+        cursos = nuevo;
+        cantidadCursos++;
+
+        cout<<"Curso registrado correctamente"<<endl;
+    }
+
+    void listarCurso() const{
+        if(cantidadCursos == 0){
+            cout<<"No hay un curso registrado"<<endl;
+            return;
+        }
+        for(int i =0;i<cantidadCursos;i++){
+            cout<<"curso: "<<cursos[i].getNombre()<<endl;
+            cout<<"Creditos: "<<cursos[i].getCreditos()<<endl;
+            cout <<"-----------------------------------------"<<endl;
+        }
+    }
+
+};
 int main() {
 
     return 0;
