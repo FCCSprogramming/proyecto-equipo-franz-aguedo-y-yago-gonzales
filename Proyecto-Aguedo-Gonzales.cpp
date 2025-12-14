@@ -42,6 +42,11 @@ struct Inscripcion{
     int indCurso;
 };
 
+struct RegistroNotas{
+    int indInscripcion;
+    float* notas;
+    int cantidadNota;
+};
 
 class Persona{
   private: 
@@ -156,13 +161,19 @@ class Sistema{
     int cantidadCursos;
     Inscripcion* inscripciones;
     int cantdiadInscripciones;
+    RegistroNotas* registroNotas;
+    int cantidadRegistroNotas;
     public:
-    Sistema():estudiantes(nullptr),cantidadEstudiantes(0),cursos(nullptr),cantidadCursos(0),inscripciones(nullptr),cantdiadInscripciones(0){}
+    Sistema():estudiantes(nullptr),cantidadEstudiantes(0),cursos(nullptr),cantidadCursos(0),inscripciones(nullptr),cantdiadInscripciones(0),registroNotas(nullptr),cantidadRegistroNotas(0){}
 
     ~Sistema(){
+        for(int i =0;i<cantidadRegistroNotas;i++){
+            delete[] registroNotas[i].notas;
+        }
         delete[] estudiantes;
         delete[] cursos;
         delete[] inscripciones;
+        delete[] registroNotas;
     }
 
     void registrarEstudiantes(){
@@ -236,7 +247,138 @@ class Sistema{
             cout <<"-----------------------------------------"<<endl;
         }
     }
+    void listarEstudiantesconInd() const{
+        for(int i =0;i<cantidadEstudiantes;i++){
+            cout <<i<<"."<<estudiantes[i].getNombre()<<endl;
+        }
+    }
+    void listarCursosconInd() const{
+        for(int i = 0;i<cantidadCursos;i++){
+            cout<<i<<"."<<cursos[i].getNombre()<<endl;
+        }
+    }
 
+    void InscribirEstudiantes(){
+        if(cantidadEstudiantes == 0||cantidadCursos == 0){
+            cout <<"Debe haber estudiantes y cursos registrados."<<endl;
+            return;
+        }
+
+        cout<<"-------- Estudiante ---------"<<endl;
+        listarEstudiantesconInd();
+
+        int e;
+        cout<<"Seleccione indice del estudiante: ";
+        cin>>e;
+
+        if(e<0 || e >= cantidadEstudiantes){
+            cout <<"Estudiante invalido"<<endl;
+            return;
+        }
+
+        cout<<"--------- Cursos -----------"<<endl;
+        listarCursosconInd();
+
+        int c;
+        cout<<"Seleccione indice del curso: ";
+        cin>>c;
+
+        if(c<0||c>=cantidadCursos){
+            cout <<"Curso invalido"<<endl;
+            cin>>c;
+        }
+
+        Inscripcion* nuevo = new Inscripcion[cantdiadInscripciones+1];
+
+        for(int i=0;i<cantdiadInscripciones;i++){
+            nuevo[i] = inscripciones[i];
+        }
+
+        nuevo[cantdiadInscripciones].indCurso = c;
+        nuevo[cantdiadInscripciones].indEstudiante = e;
+
+        delete[] inscripciones;
+        inscripciones = nuevo;
+        cantdiadInscripciones++;
+
+        cout<<"Inscripcion realizada correctamente."<<endl;
+    }
+
+    void listarInscripciones() const{
+        if(cantdiadInscripciones == 0){
+            cout <<"No hay inscripciones"<<endl;
+            return;
+        }
+
+        for(int i = 0;i<cantdiadInscripciones;i++){
+            cout << "Estudiante: "
+            << estudiantes[inscripciones[i].indEstudiante].getNombre()
+            << " | Curso: "
+            << cursos[inscripciones[i].indCurso].getNombre()
+            << endl;
+        }
+    }
+
+    void registrarNotas(){
+        if(cantdiadInscripciones == 0){
+            cout <<"No hay inscripciones registradas"<<endl;
+            return;
+        }
+
+        cout <<"----------- Inscripciones ------------"<<endl;
+        listarInscripciones();
+
+        int idx;
+        cout<<"Seleccione indice de inscripcion: ";
+        cin>>idx;
+
+        if(idx<0||idx>=cantdiadInscripciones){
+            cout<<"Indice Invalido"<<endl;
+            return;
+        }
+
+        int n;
+        cout<<"Cantidad de notas a registrar: ";
+        cin>>n;
+        if(n<=0){
+            cout<<"Cantidad invalida"<<endl;
+            return;
+        }
+
+        RegistroNotas reg;
+        reg.indInscripcion = idx;
+        reg.cantidadNota =n;
+        reg.notas = new float[n];
+
+        for(int i = 0;i<n;i++){
+            cout<<"Nota "<<i+1<<": ";
+            cin>>reg.notas[i];
+        }
+
+        RegistroNotas* nuevo = new RegistroNotas{cantidadRegistroNotas + 1};
+
+        for(int i = 0;i<cantidadRegistroNotas;i++){
+            nuevo[i] = registroNotas[i];
+        }
+
+        nuevo[cantidadRegistroNotas] = reg;
+
+        delete[] registroNotas;
+        registroNotas = nuevo;
+        cantidadRegistroNotas++;
+
+        cout<<"Notas registrada correctamente"<<endl;
+    }
+    
+    float calcularPromedio(const RegistroNotas& r) const{
+        float suma = 0;
+        for(int i = 0;i<r.cantidadNota;i++){
+            suma += r.notas[i];
+        }
+        return suma/r.cantidadNota;
+    }
+
+    
 };
 int main() {
 
