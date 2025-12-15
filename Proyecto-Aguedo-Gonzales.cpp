@@ -3,41 +3,6 @@
 #include <fstream>
 using namespace std;
 
-struct EstrucNotas{
-    float* nota;
-    int cantidadNotas;
-    string curso;
-    string estudiante;
-};
-
-void liberarMemoria(EstrucNotas* notas, int cantidadNotas) {
-    for (int i = 0; i < cantidadNotas; ++i) {
-        delete[] notas[i].nota;
-    }
-    delete[] notas; 
-}
-
-struct ListaDimEstudiantes{
-    char** nombresEstudiantes;
-    int cantidadEstudiantes;
-    char** cursos;
-    int cantidadCursos;
-}; 
-
-void liberarMemoriaEstudiantes(ListaDimEstudiantes* lista) {
-    for (int i = 0; i < lista->cantidadEstudiantes; ++i) {
-        delete[] lista->nombresEstudiantes[i];
-    }
-    delete[] lista->nombresEstudiantes;
-
-    for (int j = 0; j < lista->cantidadCursos; ++j) {
-        delete[] lista->cursos[j];
-    }
-    delete[] lista->cursos;
-
-    delete lista;
-}
-
 struct Inscripcion{
     int indEstudiante;
     int indCurso;
@@ -47,6 +12,10 @@ struct RegistroNotas{
     int indInscripcion;
     float* notas;
     int cantidadNota;
+};
+
+struct IndiceEstudiante {
+    long posicion;
 };
 
 void escribirString(ofstream& archivo,const string& texto){
@@ -131,12 +100,12 @@ class Estudiante:public Persona{
     
     void calculardesempenio()const override{
         if(promedio>=14){
-            cout<<"Desempeño: BUENO"<<endl;
+            cout<<"Desempenio: BUENO"<<endl;
         }
         else if(promedio>=11){
-            cout<<"Desempeño: REGULAR"<<endl;
+            cout<<"Desempenio: REGULAR"<<endl;
         }else{
-            cout<<"Desempeño: DEFICIENTE"<<endl;
+            cout<<"Desempenio: DEFICIENTE"<<endl;
         }
     }
 };
@@ -466,14 +435,29 @@ class Sistema{
             return;
         }
 
-        archivo.write((char*)&cantidadEstudiantes,sizeof(int));
-        for(int i = 0;i<cantidadEstudiantes;i++){
-            escribirString(archivo,estudiantes[i].getNombre());
+        archivo.write((char*)&cantidadEstudiantes, sizeof(int));
+
+        IndiceEstudiante* indice = new IndiceEstudiante[cantidadEstudiantes];
+
+        long inicioIndice = archivo.tellp();
+        archivo.seekp(sizeof(IndiceEstudiante) * cantidadEstudiantes, ios::cur);
+
+        for (int i = 0; i < cantidadEstudiantes; i++) {
+            indice[i].posicion = archivo.tellp();
+
+            escribirString(archivo, estudiantes[i].getNombre());
             int edad = estudiantes[i].getEdad();
             double prom = estudiantes[i].getPromedio();
-            archivo.write((char*)&edad,sizeof(int));
-            archivo.write((char*)&prom,sizeof(double));
+            archivo.write((char*)&edad, sizeof(int));
+            archivo.write((char*)&prom, sizeof(double));
         }
+
+        long finEstudiantes = archivo.tellp();
+        archivo.seekp(inicioIndice, ios::beg);
+        archivo.write((char*)indice, sizeof(IndiceEstudiante) * cantidadEstudiantes);
+
+        archivo.seekp(finEstudiantes, ios::beg);
+        delete[] indice;
 
         archivo.write((char*)&cantidadCursos,sizeof(int));
         for(int i = 0;i<cantidadCursos;i++){
@@ -497,8 +481,50 @@ class Sistema{
         archivo.close();
         cout << "Sistema guardado correctamente"<<endl;
     }
+    void buscarEstudianteDirecto() const {
+        ifstream archivo("sistema.dat", ios::binary);
 
-    void leerBInario() const{
+        if (!archivo) {
+            cout << "No existe archivo binario.\n";
+            return;
+        }
+
+        int cant;
+        archivo.read((char*)&cant, sizeof(int));
+
+        IndiceEstudiante* indice = new IndiceEstudiante[cant];
+        archivo.read((char*)indice, sizeof(IndiceEstudiante) * cant);
+
+        int pos;
+        cout << "Ingrese indice del estudiante (0 - " << cant - 1 << "): ";
+        cin >> pos;
+
+        if (pos < 0 || pos >= cant) {
+            cout << "Indice invalido.\n";
+            delete[] indice;
+            archivo.close();
+            return;
+        }
+
+        archivo.seekg(indice[pos].posicion, ios::beg);
+
+        string nombre = leerString(archivo);
+        int edad;
+        double prom;
+        archivo.read((char*)&edad, sizeof(int));
+        archivo.read((char*)&prom, sizeof(double));
+
+        cout << "--- ESTUDIANTE (ACCESO DIRECTO) ---"<<endl;
+        cout << "Nombre: " << nombre << endl;
+        cout << "Edad: " << edad << endl;
+        cout << "Promedio: " << prom << endl;
+
+        delete[] indice;
+        archivo.close();
+    }
+
+
+    void leerBinario() const{
         ifstream archivo("Sistema.dat",ios::binary);
         if(!archivo){
             cout <<"No existe el archivo."<<endl;
@@ -508,15 +534,13 @@ class Sistema{
         delete[] estudiantes;
         delete[] cursos;
         delete[] inscripciones;
-        if(registrarNotas != nullptr){
-            for(int i = 0;i < cantidadRegistroNotas;i++){
-                delete[] registroNotas[i].notas;
-            }
-            delete[] registroNotas;
+        for(int i = 0;i < cantidadRegistroNotas;i++){
+            delete[] registroNotas[i].notas;
         }
+        delete[] registroNotas;
 
         archivo.read((char*)&cantidadEstudiantes,sizeof(int));
-        
+
         for(int i=0;i<cantidadEstudiantes;i++){
             string nombre = leerString(archivo);
             int edad;
@@ -555,6 +579,8 @@ class Sistema{
         cout<<"Sistema cagado correctamente."<<endl;
     }
 
+
+
     void menu() {
         int opcion;
 
@@ -569,6 +595,9 @@ class Sistema{
             cout << "7. Registrar notas"<<endl;
             cout << "8. Mostrar reporte academico"<<endl;
             cout << "9. Crear archivo .txt con alumnos aprobados"<<endl;
+            cout << "10. Guardar datos en archivo binario"<<endl;
+            cout << "11. Leer datos del archivo binario"<<endl;
+            cout << "12. Buscar Estudiante (Mediante acceso directo)"<<endl;
             cout << "0. Salir"<<endl;
             cout << "Seleccione una opcion: ";
             cin >> opcion;
@@ -600,6 +629,15 @@ class Sistema{
                     break;
                 case 9:
                     crearAprobadosTXT();
+                    break;
+                case 10:
+                    guardarBinario();\
+                    break;
+                case 11:
+                    leerBinario();
+                    break;
+                case 12:
+                    buscarEstudianteDirecto();
                     break;
                 case 0:
                     cout << "Saliendo del sistema..."<<endl;
