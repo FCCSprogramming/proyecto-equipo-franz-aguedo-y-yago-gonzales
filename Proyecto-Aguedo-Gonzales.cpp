@@ -377,10 +377,90 @@ class Sistema{
         }
         return suma/r.cantidadNota;
     }
+    void mostrarReporte() const {
+        if (cantidadRegistroNotas == 0) {
+            cout << "No hay notas registradas."<<endl;
+            return;
+        }
 
-    
+        for (int i = 0; i < cantidadRegistroNotas; i++) {
+            int ins = registroNotas[i].indInscripcion;
+
+            int e = inscripciones[ins].indEstudiante;
+            int c = inscripciones[ins].indCurso;
+            cout<<endl;
+            cout << "Estudiante: " << estudiantes[e].getNombre() << endl;
+            cout << "Curso: " << cursos[c].getNombre() << endl;
+
+            cout << "Notas: ";
+            for (int j = 0; j < registroNotas[i].cantidadNota; j++) {
+                cout << registroNotas[i].notas[j] << " ";
+            }
+            cout<<endl;
+            float prom = calcularPromedio(registroNotas[i]);
+            cout << "Promedio: " << prom << endl;
+            cout << "---------------------------"<<endl;
+        }
+    }
+
+    void menu() {
+        int opcion;
+
+        do {
+            cout << "===== SISTEMA DE GESTION ACADEMICA ====="<<endl;
+            cout << "1. Registrar estudiante"<<endl;
+            cout << "2. Listar estudiantes"<<endl;
+            cout << "3. Registrar curso"<<endl;
+            cout << "4. Listar cursos"<<endl;
+            cout << "5. Inscribir estudiante a curso"<<endl;
+            cout << "6. Listar inscripciones"<<endl;
+            cout << "7. Registrar notas"<<endl;
+            cout << "8. Mostrar reporte academico"<<endl;
+            cout << "0. Salir"<<endl;
+            cout << "Seleccione una opcion: ";
+            cin >> opcion;
+
+            switch (opcion) {
+                case 1:
+                    registrarEstudiantes();
+                    break;
+                case 2:
+                    listarEstudiantes();
+                    break;
+                case 3:
+                    registrarCursos();
+                    break;
+                case 4:
+                    listarCurso();
+                    break;
+                case 5:
+                    InscribirEstudiantes();
+                    break;
+                case 6:
+                    listarInscripciones();
+                    break;
+                case 7:
+                    registrarNotas();
+                    break;
+                case 8:
+                    mostrarReporte();
+                    break;
+                case 0:
+                    cout << "Saliendo del sistema..."<<endl;
+                    break;
+                default:
+                    cout << "Opcion invalida."<<endl;
+            }
+
+        } while (opcion != 0);
+    }
 };
+
+
 int main() {
+
+    Sistema sistema;
+    sistema.menu();
 
     return 0;
 }
