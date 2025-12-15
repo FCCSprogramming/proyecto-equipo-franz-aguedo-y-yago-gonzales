@@ -49,6 +49,25 @@ struct RegistroNotas{
     int cantidadNota;
 };
 
+void escribirString(ofstream& archivo,const string& texto){
+    int tam = texto.size();
+    archivo.write((char*)&tam,sizeof(int));
+    archivo.write(texto.c_str(),tam);
+}
+
+string leerString(ifstream& archivo){
+    int tam;
+    archivo.read((char*)&tam,sizeof(int));
+
+    char* buffer = new char[tam + 1];
+    archivo.read(buffer,tam);
+    buffer[tam] = '\0';
+
+    string texto(buffer);
+    delete[] buffer;
+    return texto;  
+}
+
 class Persona{
   private: 
   string nombre;
@@ -83,7 +102,7 @@ class Persona{
   virtual void calculardesempenio()const{
       cout<<"Desempeño general de la persona.\n"  <<endl;
   }
-  virtual ~Persona(){}
+  virtual ~Persona() {}
 };
 
 class Estudiante:public Persona{
@@ -439,8 +458,102 @@ class Sistema{
         }
     }
 
-    
+    void guardarBinario() const{
+        ofstream archivo("sistema.dat",ios::binary);
 
+        if(!archivo){
+            cout<<"Error al guardar el archivo."<<endl;
+            return;
+        }
+
+        archivo.write((char*)&cantidadEstudiantes,sizeof(int));
+        for(int i = 0;i<cantidadEstudiantes;i++){
+            escribirString(archivo,estudiantes[i].getNombre());
+            int edad = estudiantes[i].getEdad();
+            double prom = estudiantes[i].getPromedio();
+            archivo.write((char*)&edad,sizeof(int));
+            archivo.write((char*)&prom,sizeof(double));
+        }
+
+        archivo.write((char*)&cantidadCursos,sizeof(int));
+        for(int i = 0;i<cantidadCursos;i++){
+            escribirString(archivo,cursos[i].getNombre());
+            int creditos = cursos[i].getCreditos();
+            archivo.write((char*)&creditos,sizeof(int));
+        }
+
+        archivo.write((char*)&cantdiadInscripciones,sizeof(int));
+        for(int i=0;i<cantdiadInscripciones;i++){
+            archivo.write((char*)&inscripciones[i],sizeof(Estudiante));
+        }
+
+        archivo.write((char*)&cantidadRegistroNotas,sizeof(int));
+        for(int i = 0;i<cantidadRegistroNotas;i++){
+            archivo.write((char*)&registroNotas[i].indInscripcion,sizeof(int));
+            archivo.write((char*)&registroNotas[i].cantidadNota,sizeof(int));
+            archivo.write((char*)&registroNotas[i].notas,sizeof(float)*registroNotas[i].cantidadNota);
+        }
+
+        archivo.close();
+        cout << "Sistema guardado correctamente"<<endl;
+    }
+
+    void leerBInario() const{
+        ifstream archivo("Sistema.dat",ios::binary);
+        if(!archivo){
+            cout <<"No existe el archivo."<<endl;
+            return;
+        }
+
+        delete[] estudiantes;
+        delete[] cursos;
+        delete[] inscripciones;
+        if(registrarNotas != nullptr){
+            for(int i = 0;i < cantidadRegistroNotas;i++){
+                delete[] registroNotas[i].notas;
+            }
+            delete[] registroNotas;
+        }
+
+        archivo.read((char*)&cantidadEstudiantes,sizeof(int));
+        
+        for(int i=0;i<cantidadEstudiantes;i++){
+            string nombre = leerString(archivo);
+            int edad;
+            double prom;
+            archivo.read((char*)&edad,sizeof(int));
+            archivo.read((char*)&prom,sizeof(double));
+            estudiantes[i] = Estudiante(nombre,edad,prom);
+        }
+
+        archivo.read((char*)&cantidadCursos,sizeof(int));
+        
+        for(int i = 0;i<cantidadCursos;i++){
+            string nombre = leerString(archivo);
+            int cred;
+            archivo.read((char*)&cred,sizeof(int));
+            cursos[i] = Curso(nombre,cred);
+        }
+
+        archivo.read((char*)&cantdiadInscripciones,sizeof(int));
+        
+        for(int i = 0;i<cantdiadInscripciones;i++){
+            archivo.read((char*)&inscripciones[i],sizeof(Inscripcion));
+        }
+
+        archivo.read((char*)&cantidadRegistroNotas,sizeof(int));
+        
+
+        for(int i=0;i<cantdiadInscripciones;i++){
+            archivo.read((char*)&registroNotas[i].indInscripcion,sizeof(int));
+            archivo.read((char*)&registroNotas[i].cantidadNota,sizeof(int));
+            registroNotas[i].notas = new float[registroNotas[i].cantidadNota];
+            archivo.read((char*)&registroNotas[i].notas,sizeof(float)*registroNotas[i].cantidadNota);
+        }
+
+        archivo.close();
+        cout<<"Sistema cagado correctamente."<<endl;
+    }
 
     void menu() {
         int opcion;
