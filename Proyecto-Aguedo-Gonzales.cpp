@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <fstream>
 using namespace std;
 
 struct EstrucNotas{
@@ -403,6 +404,44 @@ class Sistema{
         }
     }
 
+    void crearAprobadosTXT() const {
+        ofstream archivo("aprobados.txt");
+
+        if (!archivo) {
+            cout << "Error al crear el archivo."<<endl;
+            return;
+        }
+
+        bool hayAprobados = false;
+
+        for (int i = 0; i < cantidadRegistroNotas; i++) {
+            float promedio = calcularPromedio(registroNotas[i]);
+
+            if (promedio >= 11) {
+                int idxIns = registroNotas[i].indInscripcion;
+                int idxEst = inscripciones[idxIns].indEstudiante;
+                int idxCur = inscripciones[idxIns].indCurso;
+
+                archivo << estudiantes[idxEst].getNombre() << " | "
+                        << cursos[idxCur].getNombre() << " | "
+                        << promedio << endl;
+
+                hayAprobados = true;
+            }
+        }
+
+        archivo.close();
+
+        if (hayAprobados) {
+            cout << "Archivo 'aprobados.txt' generado correctamente."<<endl;
+        } else {
+            cout << "No hay estudiantes aprobados para exportar."<<endl;
+        }
+    }
+
+    
+
+
     void menu() {
         int opcion;
 
@@ -416,6 +455,7 @@ class Sistema{
             cout << "6. Listar inscripciones"<<endl;
             cout << "7. Registrar notas"<<endl;
             cout << "8. Mostrar reporte academico"<<endl;
+            cout << "9. Crear archivo .txt con alumnos aprobados"<<endl;
             cout << "0. Salir"<<endl;
             cout << "Seleccione una opcion: ";
             cin >> opcion;
@@ -444,6 +484,9 @@ class Sistema{
                     break;
                 case 8:
                     mostrarReporte();
+                    break;
+                case 9:
+                    crearAprobadosTXT();
                     break;
                 case 0:
                     cout << "Saliendo del sistema..."<<endl;
