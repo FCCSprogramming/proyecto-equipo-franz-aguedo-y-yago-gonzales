@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Sistema de Gestión Académica
 
 Proyecto final del curso Fundamentos de Programación (CC112).
@@ -54,3 +55,6 @@ En Windows usando MSYS2:
 
 ```bash
 make
+=======
+[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/gDjFIwTM)
+>>>>>>> 3fd9b70cce57e3bfd557bfc81212159c1b1faa73
